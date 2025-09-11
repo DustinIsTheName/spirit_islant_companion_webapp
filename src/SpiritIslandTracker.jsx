@@ -289,11 +289,11 @@ const ResetButton = () => {
 }
 
 const Element = ({el}) => {
-  const {counts} = useContext(SpiritContext);
+  const {counts, updateCount} = useContext(SpiritContext);
 
   return (
     <div className={`element ${el.name.toLowerCase()}`} key={el.name} style={{ textAlign: "center" }}>
-      <div className="element-info">
+      <div className="element-info vv" onClick={() => updateCount(el.name, 1, "temp")}>
         {el.name === "Joker" ? (
           <div className="joker">
             {el.image}

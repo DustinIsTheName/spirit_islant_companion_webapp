@@ -530,6 +530,7 @@ button:focus-visible {
 
   .element-info {
     display: flex;
+    cursor: pointer;
     align-items: center;
     justify-content: space-evenly;
     width: 100%;
