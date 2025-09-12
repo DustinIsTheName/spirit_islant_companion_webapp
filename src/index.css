@@ -369,6 +369,12 @@ button:focus-visible {
     }
   }
 
+  &:first-child:nth-last-child(2) {
+    .spirit-remove {
+      display: none;
+    }
+  }
+
   &> h4 {
     margin: 0;
     border-bottom: 1px solid #fff;
@@ -462,6 +468,7 @@ button:focus-visible {
       left: var(--gutter);
       width: calc(100% - var(--gutter) * 2);
       height: calc(100% - var(--gutter) * 2);
+      max-height: calc(100vh - var(--gutter) * 6);
       border-radius: 6px;
       z-index: 3;
       overflow: auto;
