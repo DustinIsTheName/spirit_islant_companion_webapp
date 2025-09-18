@@ -572,9 +572,10 @@ button:focus-visible {
       bottom: var(--count-position);
       left: var(--count-position);
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 900;
       background: rgb(var(--element-color));
       color: #fff;
+      border: 1px solid #fff;
       color: color-mix(in srgb, rgb(var(--element-color)) 15%, white);
       background-color: color-mix(in srgb, rgb(var(--element-color)) 50%, black);
       border-radius: 50%;
@@ -587,6 +588,7 @@ button:focus-visible {
       font-weight: 700;
       color: color-mix(in srgb, rgb(var(--element-color)) 30%, black);
       font-family: monospace;
+      user-select: none;
     }
   }
 

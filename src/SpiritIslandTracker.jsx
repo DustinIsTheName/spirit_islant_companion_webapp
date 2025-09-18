@@ -293,7 +293,7 @@ const Element = ({el}) => {
 
   return (
     <div className={`element ${el.name.toLowerCase()}`} key={el.name} style={{ textAlign: "center" }}>
-      <div className="element-info vv" onClick={() => updateCount(el.name, 1, "temp")}>
+      <div className="element-info" onClick={() => updateCount(el.name, 1, "temp")}>
         {el.name === "Joker" ? (
           <div className="joker">
             {el.image}
@@ -304,7 +304,7 @@ const Element = ({el}) => {
             alt={el.name}
           />
         )}
-        {(el.name !== "Joker" && el.name !== "Energy") && <div className="persist-count">{counts[el.name].persist}</div>}
+        {(el.name !== "Joker" && el.name !== "Energy" && counts[el.name].persist > 0) && <div className="persist-count">{counts[el.name].persist}</div>}
         <div className="total-count">{counts[el.name].temp + counts[el.name].persist}</div>
       </div>
       <Incrementor el={el} type="temp" />
