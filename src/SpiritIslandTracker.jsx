@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useReducer } from "react";
+import React, { createContext, useContext, useState, useReducer, useEffect } from "react";
 import spiritsData from "./spirits.json"; // Adjust path if needed
 
 // Importing element images
@@ -156,9 +156,13 @@ const SpiritIslandTracker = () => {
     }
   }
 
-  const [spirits, dispatch] = useReducer(spiritReducer, [
+  const [spirits, dispatch] = useReducer(spiritReducer, JSON.parse(localStorage.getItem("spiritsData")) || [
     {...newSprit, id: crypto.randomUUID()}
   ]);
+
+  useEffect(() => {
+    localStorage.setItem("spiritsData", JSON.stringify(spirits));
+  }, [spirits]);
 
   return (
     <div className="spirits">
