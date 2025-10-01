@@ -3098,6 +3098,10 @@
                         {
                             "Quantity": 4,
                             "Element": "Earth"
+                        },
+                        {
+                            "Quantity": 5,
+                            "Element": "Quake"
                         }
                     ]
                 },
@@ -3110,6 +3114,10 @@
                         {
                             "Quantity": 5,
                             "Element": "Earth"
+                        },
+                        {
+                            "Quantity": 7,
+                            "Element": "Quake"
                         }
                     ]
                 }
@@ -3847,32 +3855,7 @@
             ]
         }
     ],
-    "Bringer of Dreams and Nightmares": [
-        {
-            "Innate": "SPIRITS MAY YET DREAM",
-            "Thresholds": [
-                {
-                    "Elements": [
-                        {
-                            "Quantity": 2,
-                            "Element": "Moon"
-                        },
-                        {
-                            "Quantity": 2,
-                            "Element": "Air"
-                        }
-                    ]
-                },
-                {
-                    "Elements": [
-                        {
-                            "Quantity": 3,
-                            "Element": "Moon"
-                        }
-                    ]
-                }
-            ]
-        },
+    "Bringer of Dreams and Nightmares - Violence": [
         {
             "Innate": "NIGHT TERRORS",
             "Thresholds": [
