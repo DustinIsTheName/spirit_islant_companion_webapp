@@ -30,11 +30,49 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  padding: 50px 0;
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+}
+
+.switch {
+  border: 2px solid #b49a6e;
+  background-color: #b49a6e14;
+  margin-left: 10px;
+  height: 20px;
+  width: 50px;
+  border-radius: 20px;
+  display: inline-flex;
+  position: relative;
+  cursor: pointer;
+  transition: background-color .3s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 3px;
+    margin: auto;
+    height: 12px;
+    width: 12px;
+    border-radius: 12px;
+    background-color: color-mix(in srgb, #b49a6e, white 45%);
+    transition: left .3s;
+  }
+
+  &.on {
+    background-color: color-mix(in srgb, #b49a6ea4, white 35%);
+    background-color: #b49a6e;
+
+    &::before {
+      left: calc(100% - 15px);
+      background-color: color-mix(in srgb, #b49a6e, black 75%);
+    }
+  }
 }
 
 button {
@@ -48,7 +86,7 @@ button {
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
-  align-self: end;
+  align-self: stretch;
 }
 
 button:hover {
@@ -276,6 +314,18 @@ button:focus-visible {
   &::before {transform: rotate(90deg);}
 }
 
+.settings {
+  text-align: left;
+  padding: 0 20px;
+  margin: 40px 0 0;
+  display: flex;
+  align-items: center;
+
+  .info {
+    margin-left: 5px;
+  }
+}
+
 .spirit {
   display: flex;
   flex-direction: column;
@@ -398,6 +448,10 @@ button:focus-visible {
   /* @media (prefers-color-scheme: light) {
     background-color: color-mix(in srgb, rgb(var(--spirit-color)) 25%, white 75%);
   } */
+
+  .reduce-ui & {
+    min-height: 0;
+  }
 }
 
 .aspect {
@@ -500,6 +554,27 @@ button:focus-visible {
         }
       }
     }
+
+    .reduce-ui & {
+      h2 {
+        align-items: center;
+        padding: 8px;
+
+        img {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          object-fit: cover;
+          object-position: left top;
+        }
+
+        img + span {
+          position: static;
+          background: none;
+          line-height: 1.1;
+        }
+      }
+    }
   }
 }
 
@@ -511,6 +586,10 @@ button:focus-visible {
 
   .closed + & {
     display: none;
+  }
+
+  .reduce-ui & {
+    gap: 5px;
   }
 }
 
@@ -589,6 +668,9 @@ button:focus-visible {
       color: color-mix(in srgb, rgb(var(--element-color)) 30%, black);
       font-family: monospace;
       user-select: none;
+      -webkit-user-select: none; /* Safari, Chrome, Opera */
+      -moz-user-select: none;    /* Firefox */
+      -ms-user-select: none;     /* Internet Explorer/Edge */
     }
   }
 
@@ -611,6 +693,10 @@ button:focus-visible {
       border: 2px solid color-mix(in srgb, rgb(var(--element-color)) 70%, black 30%);
       background-color: color-mix(in srgb, rgb(var(--element-color)) 5%, white 95%);
       outline: none;
+
+      span {
+        user-select: none;
+      }
     }
 
     &.persist button {
@@ -618,6 +704,54 @@ button:focus-visible {
       border: 0;
       background-color: rgb(var(--element-color));
       border-radius: 50%;
+    }
+  }
+
+  .reduce-ui & {
+    /* Magic formula for getting 8 elements on one line; the 5px is the container gap */
+    width: calc((100% / 8) - (5px * 7 / 8));
+
+    .element-info {
+      flex-direction: column-reverse;
+      margin: 0;
+
+      img {
+        --test: 25px;
+        width: var(--test);
+        height: var(--test);
+      }
+
+      .joker {
+        width: 25px;
+        height: 25px;
+        font-size: 25px;
+      }
+
+      .total-count {
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .persist-count {
+        --count-position: 0;
+      }
+    }
+
+    .incrementors {
+      width: 100%;
+
+      &.temp {
+        display: none;
+      }
+
+      &.persist button:first-child {
+        border-radius: 5px;
+        width: 100%;
+      }
+
+      &.persist button:last-child {
+        display: none;
+      }
     }
   }
 }
@@ -629,6 +763,10 @@ button:focus-visible {
   justify-content: center;
   align-items: flex-start;
   gap: 20px;
+
+  .reduce-ui & {
+    gap: 10px;
+  }
 
   .closed + & {
     display: none;
@@ -743,6 +881,41 @@ button:focus-visible {
 
       &> div {
         color: #fff;
+        font-size: 0.9em;
+      }
+
+      .reduce-ui & {
+        height: 35px;
+        width: 35px;
+
+        img {
+          width: 20px;
+          height: 20px;
+          margin: 0 auto;
+        }
+
+        &> div {
+          position: absolute;
+          z-index: 1;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          line-height: 1;
+          margin: 0;
+          background-color: #00000070;
+          border-radius: 20px;
+          width: 13px;
+          height: 13px;
+          font-size: 11px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        span {
+          font-size: 18px;
+          margin: 0 auto;
+        }
       }
     }
 

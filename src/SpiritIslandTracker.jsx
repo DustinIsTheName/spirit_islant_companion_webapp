@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useState, useReducer, useEffect, useRef } from "react";
 import spiritsData from "./spirits.json"; // Adjust path if needed
 
 // Importing element images
@@ -77,42 +77,61 @@ const SpiritIslandTracker = () => {
   function spiritReducer(state, action) {
     switch (action.type) {
 
-      case "ADD_SPIRIT": {
-        return [
+      case "TOGGLE_UI": {
+        return {
           ...state,
-          {...newSprit, id: crypto.randomUUID()}
-        ]
+          reducedUImode: !state.reducedUImode
+        }
+      }
+
+      case "ADD_SPIRIT": {
+        return {
+          ...state,
+          spirits: [
+            ...state.spirits,
+            {...newSprit, id: crypto.randomUUID()}
+          ]
+        }
       }
       
       case "REMOVE_SPIRIT": {
         const { id } = action.payload;
 
-        return state.filter(spirit => spirit.id !== id);
+        return {
+          ...state,
+          spirits: state.spirits.filter(spirit => spirit.id !== id)
+        }
       }
 
       case "CHANGE_SPIRIT": {
         const { id, spiritName } = action.payload;
 
-        return state.map(spirit => 
-          spirit.id === id ? {
-            ...spirit,
-            selectedSpirit: spiritName
-          } : spirit
-        )
+        return {
+          ...state,
+          spirits: state.spirits.map(spirit => 
+            spirit.id === id ? {
+              ...spirit,
+              selectedSpirit: spiritName
+            } : spirit
+          )
+        }
       }
 
       case "TOGGLE_PANELS": {
         const { id, panel, isOpen } = action.payload;
 
-        return state.map(spirit => 
-          spirit.id === id ? {
-            ...spirit,
-            panels: {
-              ...spirit.panels,
-              [panel]: isOpen === undefined ? !spirit.panels[panel] : isOpen
-            }
-          } : spirit
-        )
+        return {
+          ...state,
+          spirits: state.spirits.map(spirit => 
+            spirit.id === id ? {
+              ...spirit,
+              panels: {
+                ...spirit.panels,
+                [panel]: isOpen === undefined ? !spirit.panels[panel] : isOpen
+              }
+            } : spirit
+          )
+        }
       }
 
       case "ADJUST_ELEMENT": {
@@ -121,34 +140,40 @@ const SpiritIslandTracker = () => {
         const otherType = type == 'temp' ? 'persist' : 'temp';
         const maxCount = element === "Energy" ? 20 : 9;
 
-        return state.map(spirit => 
-          spirit.id === id ? {
-            ...spirit,
-            elementCounts: {
-              ...spirit.elementCounts,
-              [element]: {
-                [type]: Math.min(Math.max(0, spirit.elementCounts[element][type] + delta), (maxCount - spirit.elementCounts[element][otherType])),
-                [otherType]: spirit.elementCounts[element][otherType]
+        return {
+          ...state,
+          spirits: state.spirits.map(spirit =>
+            spirit.id === id ? {
+              ...spirit,
+              elementCounts: {
+                ...spirit.elementCounts,
+                [element]: {
+                  [type]: Math.min(Math.max(0, spirit.elementCounts[element][type] + delta), (maxCount - spirit.elementCounts[element][otherType])),
+                  [otherType]: spirit.elementCounts[element][otherType]
+                }
               }
-            }
-          } : spirit
-        )
+            } : spirit
+          )
+        }
       }
 
       case "RESET_ELEMENTS": {
         const { id } = action.payload;
 
-        return state.map(spirit => 
-          spirit.id === id ? {
-            ...spirit,
-            elementCounts: Object.fromEntries(
-              Object.entries(spirit.elementCounts).map(([element, value]) => [
-                element,
-                { ...value, temp: 0 }
-              ])
-            )
-          } : spirit
-        )
+        return {
+          ...state,
+          spirits: state.spirits.map(spirit => 
+            spirit.id === id ? {
+              ...spirit,
+              elementCounts: Object.fromEntries(
+                Object.entries(spirit.elementCounts).map(([element, value]) => [
+                  element,
+                  { ...value, temp: 0 }
+                ])
+              )
+            } : spirit
+          )
+        }
       }
       
       default:
@@ -156,25 +181,63 @@ const SpiritIslandTracker = () => {
     }
   }
 
-  const [spirits, dispatch] = useReducer(spiritReducer, JSON.parse(localStorage.getItem("spiritsData")) || [
-    {...newSprit, id: crypto.randomUUID()}
-  ]);
+  const savedData = JSON.parse(localStorage.getItem("spiritsData"));
+
+  let gameState;
+
+  if (Array.isArray(savedData)) {
+    // Old schema → migrate
+    gameState = {
+      spirits: savedData,
+      visibleSpirit: 0,
+      reducedUImode: false
+    };
+  } else if (savedData) {
+    // Already in new schema
+    gameState = {
+      visibleSpirit: 0,
+      reducedUImode: false,
+      ...savedData,
+      spirits: savedData.spirits || [
+        {...newSprit, id: crypto.randomUUID()}
+      ]
+    };
+  } else {
+    // Nothing saved → start fresh
+    gameState = {
+      visibleSpirit: 0,
+      reducedUImode: false,
+      spirits: [
+        {...newSprit, id: crypto.randomUUID()}
+      ]
+    };
+  }
+
+  const [gameData, dispatch] = useReducer(spiritReducer, gameState);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("spiritsData", JSON.stringify(spirits));
-  }, [spirits]);
+    localStorage.setItem("spiritsData", JSON.stringify(gameData));
+  }, [gameData]);
 
   return (
-    <div className="spirits">
-      <SpiritContext.Provider value={{dispatch}}>
-        {spirits.map(spirit => <SpiritTracker key={spirit.id} spiritId={spirit.id} spirit={spirit} />)}
-        {spirits.length < 6 && (
-          <div className="add-sprit" key="add-spirit-card" onClick={() => dispatch({ type: "ADD_SPIRIT" })}>
-            <div className="plus-button"></div>
-          </div>
-        )}
-      </SpiritContext.Provider>
-    </div>
+    <>
+      <div className={`spirits ${gameData.reducedUImode && "reduce-ui"}`}>
+        <SpiritContext.Provider value={{dispatch, reducedUImode: gameData.reducedUImode}}>
+          {gameData.spirits.map(spirit => <SpiritTracker key={spirit.id} spiritId={spirit.id} spirit={spirit} />)}
+          {gameData.spirits.length < 6 && (
+            <div className="add-sprit" key="add-spirit-card" onClick={() => dispatch({ type: "ADD_SPIRIT" })}>
+              <div className="plus-button"></div>
+            </div>
+          )}
+        </SpiritContext.Provider>
+      </div>
+      <div className="settings">
+        Enable reduced UI mode <span className="info" onClick={() => setShowInfo(!showInfo)}>ⓘ</span>:
+        <span className={`switch ${gameData.reducedUImode ? "on" : "off"}`} onClick={() => dispatch({ type: "TOGGLE_UI" })}></span>
+      </div>
+      {showInfo && <div>Here's some info!</div>}
+    </>
   )
 }
 
@@ -278,7 +341,7 @@ const Innate = ({ innate, counts, index }) => {
                   ) : (
                     <span>🃏</span>
                   )}
-                  <div style={{ fontSize: "0.9em" }}>
+                  <div>
                     {elem.Quantity}
                   </div>
                 </div>
@@ -345,17 +408,50 @@ const ResetButton = ({ spiritId }) => {
       onClick={() => dispatch({ type: 'RESET_ELEMENTS', payload: { id: spiritId }})}
       className="reset-button"
     >
-      Reset Elements
+      Reset
     </button>
   )
 }
 
 const Element = ({ spiritId, el, counts }) => {
-  const { dispatch } = useContext(SpiritContext);
+  const { dispatch, reducedUImode } = useContext(SpiritContext);
+
+  const timerRef = useRef(null);
+  const LONG_PRESS_MS = 600;
+
+  const handleDown = (params) => {
+    timerRef.current = setTimeout(() => {
+      dispatch(params);
+      timerRef.current = null;
+    }, LONG_PRESS_MS);
+  };
+
+  const handleUp = (params) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      dispatch(params);
+      timerRef.current = null;
+    }
+  };
+
+  const tempResetParams = {type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: "temp", delta: counts[el.name].temp * -1}}
+  const tempIncrParams = {type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: "temp", delta: 1}}
 
   return (
     <div className={`element ${el.name.toLowerCase()}`} key={el.name} style={{ textAlign: "center" }}>
-      <div className="element-info" onClick={() => dispatch({type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: "temp", delta: 1}})}>
+      <div 
+        className="element-info"
+        {...(
+          reducedUImode ? {
+            onPointerDown: () => handleDown(tempResetParams),
+            onPointerUp: () => handleUp(tempIncrParams),
+            onPointerCancel: () => clearTimeout(timerRef.current),
+            onContextMenu: () => dispatch(tempResetParams)
+          } : {
+            onClick: () => dispatch(tempIncrParams)
+          }
+        )}
+      >
         {el.name === "Joker" ? (
           <div className="joker">
             {el.image}
@@ -369,18 +465,52 @@ const Element = ({ spiritId, el, counts }) => {
         {(el.name !== "Joker" && el.name !== "Energy" && counts[el.name].persist > 0) && <div className="persist-count">{counts[el.name].persist}</div>}
         <div className="total-count">{counts[el.name].temp + counts[el.name].persist}</div>
       </div>
-      <Incrementor el={el} type="temp" spiritId={spiritId} />
-      {((el.name !== "Joker" && el.name !== "Energy") ) && <Incrementor el={el} type="persist" spiritId={spiritId} />}
+      <Incrementor el={el} type="temp" current={counts[el.name].temp} spiritId={spiritId} />
+      {((el.name !== "Joker" && el.name !== "Energy") ) && <Incrementor el={el} type="persist" current={counts[el.name].persist} spiritId={spiritId} />}
     </div>
   )
 }
 
-const Incrementor = ({ el, type, spiritId }) => {
-  const { dispatch } = useContext(SpiritContext);
+const Incrementor = ({ el, type, spiritId, current }) => {
+  const { dispatch, reducedUImode } = useContext(SpiritContext);
+
+  const resetParams = {type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: type, delta: current * -1}}
+  const incrParams = {type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: type, delta: 1}}
+
+  const timerRef = useRef(null);
+  const LONG_PRESS_MS = 600;
+
+  const handleDown = (params) => {
+    timerRef.current = setTimeout(() => {
+      dispatch(params);
+      timerRef.current = null;
+    }, LONG_PRESS_MS);
+  };
+
+  const handleUp = (params) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      dispatch(params);
+      timerRef.current = null;
+    }
+  };
 
   return (
     <div className={`incrementors ${type}`}>
-      <button onClick={() => dispatch({type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: type, delta: 1}})}><span>+</span></button>
+      <button 
+        {...(
+          reducedUImode ? {
+            onPointerDown: (e) => {handleDown(resetParams)},
+            onPointerUp: () => handleUp(incrParams),
+            onPointerCancel: () => clearTimeout(timerRef.current),
+            onContextMenu: (e) => {e.preventDefault(); dispatch(resetParams)}
+          } : {
+            onClick: () => dispatch(incrParams)
+          }
+        )}
+      >
+        <span>+</span>
+      </button>
       <button onClick={() => dispatch({type: 'ADJUST_ELEMENT', payload: {id: spiritId, element: el.name, type: type, delta: -1}})}><span>-</span></button>
     </div>
   )

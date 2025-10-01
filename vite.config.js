@@ -6,7 +6,7 @@ export default defineConfig({
   base: "/spirit_islant_companion_webapp/", 
   server: {
     allowedHosts: [
-      "d6f7e824d660.ngrok-free.app"
+      "ea100a3c8255.ngrok-free.app"
     ]
   }
 });
