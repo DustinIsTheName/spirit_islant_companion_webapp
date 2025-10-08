@@ -84,6 +84,15 @@ const SpiritIslandTracker = () => {
         }
       }
 
+      case "FOCUS_SPIRIT": {
+        const { spiritIndex } = action.payload;
+
+        return {
+          ...state,
+          visibleSpirit: spiritIndex
+        }
+      }
+
       case "ADD_SPIRIT": {
         return {
           ...state,
@@ -96,10 +105,18 @@ const SpiritIslandTracker = () => {
       
       case "REMOVE_SPIRIT": {
         const { id } = action.payload;
+        var filteredSpirits;
+
+        if (state.spirits.length > 1) {
+          filteredSpirits = state.spirits.filter(spirit => spirit.id !== id)
+        } else {
+          filteredSpirits = state.spirits
+        }
 
         return {
           ...state,
-          spirits: state.spirits.filter(spirit => spirit.id !== id)
+          visibleSpirit: Math.min(state.visibleSpirit, (filteredSpirits.length - 1)),
+          spirits: filteredSpirits
         }
       }
 
@@ -224,20 +241,78 @@ const SpiritIslandTracker = () => {
     <>
       <div className={`spirits ${gameData.reducedUImode && "reduce-ui"}`}>
         <SpiritContext.Provider value={{dispatch, reducedUImode: gameData.reducedUImode}}>
-          {gameData.spirits.map(spirit => <SpiritTracker key={spirit.id} spiritId={spirit.id} spirit={spirit} />)}
-          {gameData.spirits.length < 6 && (
-            <div className="add-sprit" key="add-spirit-card" onClick={() => dispatch({ type: "ADD_SPIRIT" })}>
-              <div className="plus-button"></div>
-            </div>
-          )}
+          {
+            gameData.reducedUImode ? (
+              <>
+                <div className={`spirit-thumbnails ${gameData.spirits.length === 1 && 'only-spirit'}`}>
+                  {gameData.spirits.map((spirit, index) => <SpiritThumb key={spirit.id} spiritIndex={index} spirit={spirit} />)}
+                  {gameData.spirits.length < 6 && 
+                    <div className="add-spirit thumb" key="add-spirit-card" onClick={() => dispatch({ type: "ADD_SPIRIT" })}>
+                      <div className="plus-button"></div>
+                    </div>
+                  }
+                </div>
+                
+                <SpiritTracker spiritId={gameData.spirits[gameData.visibleSpirit].id} spirit={gameData.spirits[gameData.visibleSpirit]} />
+              </>
+            ) : (
+              <>
+                {gameData.spirits.map(spirit => <SpiritTracker key={spirit.id} spiritId={spirit.id} spirit={spirit} />)}
+                {gameData.spirits.length < 6 && (
+                  <div className="add-spirit" key="add-spirit-card" onClick={() => dispatch({ type: "ADD_SPIRIT" })}>
+                    <div className="plus-button"></div>
+                  </div>
+                )}
+              </>
+            )
+          }
+          {}
         </SpiritContext.Provider>
       </div>
       <div className="settings">
         Enable reduced UI mode <span className="info" onClick={() => setShowInfo(!showInfo)}>ⓘ</span>:
         <span className={`switch ${gameData.reducedUImode ? "on" : "off"}`} onClick={() => dispatch({ type: "TOGGLE_UI" })}></span>
       </div>
-      {showInfo && <div>Here's some info!</div>}
+      {showInfo && 
+        <div class="info-text">
+          Intended to reduce the UI for easy use on mobile portrait:
+          <ul>
+            <li>
+              Most buttons are removed
+            </li>
+            <li>
+              Tap the element icon to increment an element's single-turn element count
+            </li>
+            <li>
+              Tap the button below an element to increment the element's persistant count (i.e. an element from your presence tracks)
+            </li>
+            <li>
+              Long press an element or persistant-element-button to reset it to 0.
+            </li>
+            <li>
+              The Reset button will set all counts to 0 except for your persistant elements
+            </li>
+            <li>
+              Only see one Spirit at a time; switch between them with the thumbnails at the top
+            </li>
+          </ul>
+        </div>
+      }
     </>
+  )
+}
+
+const SpiritThumb = ({spiritIndex, spirit}) => {
+  const { dispatch } = useContext(SpiritContext);
+
+  return (
+    <span className={`thumb ${spiritClass(spirit.selectedSpirit)}`} onClick={() => dispatch({ type: "FOCUS_SPIRIT", payload: {spiritIndex: spiritIndex} })}>
+      {spirit.selectedSpirit ? (
+        <img src={spiritImages[spiritImgKey(spirit.selectedSpirit)]} />
+      ) : (
+        <span>?</span>
+      )}
+    </span>
   )
 }
 

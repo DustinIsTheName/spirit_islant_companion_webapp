@@ -274,7 +274,7 @@ button:focus-visible {
   gap: 40px;
 }
 
-.add-sprit {
+.add-spirit {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,6 +326,59 @@ button:focus-visible {
   }
 }
 
+.info-text {
+  text-align: left;
+  margin-top: 20px;
+  padding: 0 30px;
+  font-size: 14px;
+  
+  ul {
+    margin-block: 5px 0;
+    padding-left: 20px;
+  }
+}
+
+.spirit-thumbnails {
+  display: flex;
+  width: 100%;
+  gap: 5px;
+
+  .thumb {
+    width: calc((100% / 6) - (5px * 5 / 6));
+    flex-basis: calc((100% / 6) - (5px * 5 / 6));
+    padding: 5px;
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+    border: 2px solid rgb(var(--spirit-color));
+    background-color: rgba(var(--spirit-color), .2);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 75px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 5px;
+      object-fit: cover;
+      object-position: 18% 0%;
+    }
+
+    .plus-button {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+
+      &::after,
+      &::before {
+
+      }
+    }
+  }
+}
+
 .spirit {
   display: flex;
   flex-direction: column;
@@ -341,7 +394,7 @@ button:focus-visible {
   flex-grow: 1;
   position: relative;
 
-  &.closed {
+  .spirits:not(.reduce-ui) &.closed {
     min-height: 0;
     align-self: flex-start;
     cursor: pointer;
@@ -405,21 +458,25 @@ button:focus-visible {
       width: 50%;
     }
 
-    .closed &::before {content: '';transform: rotate(90deg);}
+    .spirits:not(.reduce-ui) .closed &::before {content: '';transform: rotate(90deg);}
     &::after {content: '';}
   }
+
+  .reduce-ui & .spirit-toggle {display: none;}
 
   .spirit-remove {
     left: auto;
     right: -20px;
     &::before {content: '';transform: rotate(45deg);}
     &::after {content: '';transform: rotate(-45deg)}
-    .closed & {
+
+    .spirits:not(.reduce-ui) .closed & {
       display: none;
     }
   }
 
-  &:first-child:nth-last-child(2) {
+  &:first-child:nth-last-child(2),
+  .spirit-thumbnails.only-spirit + & {
     .spirit-remove {
       display: none;
     }
@@ -451,6 +508,7 @@ button:focus-visible {
 
   .reduce-ui & {
     min-height: 0;
+    gap: 10px;
   }
 }
 
@@ -783,6 +841,10 @@ button:focus-visible {
     h6 {
       margin: 0;
     }
+
+    .reduce-ui & {
+      gap: 5px;
+    }
   }
 
   .threshold-line {
@@ -798,6 +860,10 @@ button:focus-visible {
     border-left-color: rgb(0, 160, 99);
     border-radius: 5px;
     padding: 5px;
+
+    .reduce-ui & {
+      --border-width: 2px;
+    }
 
     &::after,
     &::before {
@@ -958,7 +1024,7 @@ button:focus-visible {
     padding: 15px;
   }
 
-  .add-sprit {
+  .add-spirit {
     min-height: 75px;
     flex-basis: 100%;
   }
